@@ -4,6 +4,8 @@
 #include "PPMRaytracer.h"
 
 
+void cube(const Vec3& a, const Vec3& b, const Vec3& c, const Vec3& d, int depth, const int max, std::vector<Shape *> & shapes);
+void pyth_tree_3d(const Vec3& a, const Vec3& b, const Vec3& c, const Vec3& d, int depth, const int max, std::vector<Shape *> & shapes);
 int main()
 {
     int width = 720;
@@ -48,17 +50,32 @@ int main()
    // koch_snowflake3d(Vec3(0.5, 0.0, -0.408), Vec3(0.0, 0.866, 0.0), Vec3(0.0, 0.0, 0.0), 1, 2, shapes);
    // koch_snowflake3d(Vec3(-0.5, 0.0, -0.408), Vec3(0.5, 0.0, -0.408), Vec3(0.0, 0.0, 0.0),  1, 2, shapes);
     
-    shapes.push_back(new Sphere((Vec3(0.0, -5005.0, 0.0)), 5000.0, Color(255, 0, 0), 1000.0, 0.5f, 1.3f));
-    shapes.push_back(new Triangle(Vec3(0.0, 0.0, 0.0), Vec3(1.0, 0.0, 0.0), Vec3(0.5, 0.866, 0.0), Color(255, 255, 255), 300.0, 0.2f, 1.3f));  
-    shapes.push_back(new Triangle(Vec3(0.0, 0.0, 0.0), Vec3(0.5, 0.866, 0.0), Vec3(0.5, 0.289, -0.816), Color(255, 255, 255), 300.0, 0.2f, 1.3f));  
-    shapes.push_back(new Triangle(Vec3(1.0, 0.0, 0.0), Vec3(0.5, 0.289, -0.816), Vec3(0.5, 0.866, 0.0), Color(255, 255, 255), 300.0, 0.2f, 1.3f));  
-    shapes.push_back(new Triangle(Vec3(0.0, 0.0, 0.0), Vec3(0.5, 0.289, -0.816), Vec3(1.0, 0.0, 0.0), Color(255, 255, 255), 300.0, 0.2f, 1.3f));  
+    //shapes.push_back(new Sphere((Vec3(0.0, -5005.0, 0.0)), 5000.0, Color(255, 0, 0), 1000.0, 0.5f, 1.3f));
+    //shapes.push_back(new Triangle(Vec3(0.0, 0.0, 0.0), Vec3(1.0, 0.0, 0.0), Vec3(0.5, 0.866, 0.0), Color(255, 255, 255), 300.0, 0.2f, 1.3f));  
+    //shapes.push_back(new Triangle(Vec3(0.0, 0.0, 0.0), Vec3(0.5, 0.866, 0.0), Vec3(0.5, 0.289, -0.816), Color(255, 255, 255), 300.0, 0.2f, 1.3f));  
+    //shapes.push_back(new Triangle(Vec3(1.0, 0.0, 0.0), Vec3(0.5, 0.289, -0.816), Vec3(0.5, 0.866, 0.0), Color(255, 255, 255), 300.0, 0.2f, 1.3f));  
+    //shapes.push_back(new Triangle(Vec3(0.0, 0.0, 0.0), Vec3(0.5, 0.289, -0.816), Vec3(1.0, 0.0, 0.0), Color(255, 255, 255), 300.0, 0.2f, 1.3f));  
+    //
+    //koch_snowflake3d(Vec3(0.0, 0.0, 0.0), Vec3(1.0, 0.0, 0.0), Vec3(0.5, 0.866, 0.0), 1, 2, shapes);
+    //koch_snowflake3d(Vec3(0.0, 0.0, 0.0), Vec3(0.5, 0.866, 0.0), Vec3(0.5, 0.289, -0.816), 1, 2, shapes);
+    //koch_snowflake3d(Vec3(1.0, 0.0, 0.0), Vec3(0.5, 0.289, -0.816), Vec3(0.5, 0.866, 0.0), 1, 2, shapes);
+    //koch_snowflake3d(Vec3(0.0, 0.0, 0.0), Vec3(0.5, 0.289, -0.816), Vec3(1.0, 0.0, 0.0), 1, 2, shapes);
+   
+    // Cube check
+    Vec3 a = Vec3(0.0, -1.0, 1.0);
+    Vec3 b = Vec3(1.0, -1.0, 1.0);
+    Vec3 c = Vec3(0.0, -1.0, 0.0);
+    Vec3 d = Vec3(1.0, -1.0, 0.0);
+   
+   a.rotate_about_y(0.5);
+   b.rotate_about_y(0.5);
+   c.rotate_about_y(0.5);
+   d.rotate_about_y(0.5);
     
-    koch_snowflake3d(Vec3(0.0, 0.0, 0.0), Vec3(1.0, 0.0, 0.0), Vec3(0.5, 0.866, 0.0), 1, 2, shapes);
-    koch_snowflake3d(Vec3(0.0, 0.0, 0.0), Vec3(0.5, 0.866, 0.0), Vec3(0.5, 0.289, -0.816), 1, 2, shapes);
-    koch_snowflake3d(Vec3(1.0, 0.0, 0.0), Vec3(0.5, 0.289, -0.816), Vec3(0.5, 0.866, 0.0), 1, 2, shapes);
-    koch_snowflake3d(Vec3(0.0, 0.0, 0.0), Vec3(0.5, 0.289, -0.816), Vec3(1.0, 0.0, 0.0), 1, 2, shapes);
-    
+    cube(a, b, c, d, 0, 6, shapes);
+ 
+    //pyth_tree_3d(a, b, c, d, 0, 1, shapes);  
+
     // Lights in the scene
     std::vector<Light*> lights;
     lights.push_back(new AmbientLight(0.2f));
@@ -69,7 +86,7 @@ int main()
     Scene scene(shapes, lights);
 
     // Setup camera:
-    Camera camera(Vec3(0.0, 0.5, -5.0), 720, 720, 1.0, 1.0, 1.0);
+    Camera camera(Vec3(0.8, 0.5, -5.0), 720, 720, 1.0, 1.0, 1.0);
     camera.get_pixels() = pixels; 
 
     // Render the scene!

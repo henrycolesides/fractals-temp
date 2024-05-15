@@ -178,3 +178,9 @@ Vec3 operator/(const float op1, const Vec3& op2)
     Vec3 temp = Vec3(op2.values[0] / op1, op2.values[1] / op1, op2.values[2] / op1);
     return temp;
 }
+
+std::ostream & operator<<(std::ostream & out, const Vec3& op2)
+{
+    out << "(" << op2.values[0] << ", " << op2.values[1] << ", " << op2.values[2] << ")";
+    return out;
+}

@@ -33,7 +33,7 @@ void Camera::render(Scene & scene)
     std::fstream output;
     char fname[200]; 
     
-    int num_frames = 50;
+    int num_frames = 1;
     float angle = ((6.28319) / (float)num_frames);
     for (int f = 0; f < num_frames; ++f)
     {
