@@ -1,7 +1,8 @@
-CC = g++
+CC = g++ -g
 PROG = IFS_Voxel
-#CAM = Camera
+CAM = Camera
 #SC = Scene
+OCT = Octree
 SCO = SceneObjects
 MATH = VectorMath
 #F = FractalGeneration
@@ -10,9 +11,15 @@ MATH = VectorMath
 all: $(PROG)
 
 $(PROG): $(PROG).o
-	$(CC) $(CFLAGS) -o $@ $< $(SCO).o $(MATH).o
+	$(CC) $(CFLAGS) -o $@ $< $(CAM).o $(OCT).o $(SCO).o $(MATH).o
 
-$(PROG).o: $(PROG).cpp $(PROG).h $(SCO).o $(MATH).o 
+$(PROG).o: $(PROG).cpp $(PROG).h $(CAM).o $(OCT).o $(SCO).o $(MATH).o 
+	$(CC) $(CFLAGS) -c $<
+
+$(CAM).o: $(CAM).cpp $(CAM).h $(OCT).o $(SCO).o $(MATH).o
+	$(CC) $(CFLAGS) -c $<
+
+$(OCT).o: $(OCT).cpp $(OCT).h $(SCO).o $(MATH).o
 	$(CC) $(CFLAGS) -c $<
 
 $(SCO).o: $(SCO).cpp $(SCO).h $(MATH).o

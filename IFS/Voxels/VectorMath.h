@@ -55,8 +55,10 @@ class Vec3
 		friend float distance_between_points(const Vec3& op1, const Vec3& op2);
 
 		float length() const;
+		void normalize();
 		void set(const char dimension, const float value);
 		float get(const char dimension) const;
+		float get(const int dimension) const;
 	private:
 		float values[3];
 };

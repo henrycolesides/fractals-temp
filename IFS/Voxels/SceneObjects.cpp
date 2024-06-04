@@ -373,9 +373,14 @@ Light::~Light() { return; }
 AmbientLight::AmbientLight() {}
 AmbientLight::AmbientLight(const float INTENSITY) : Light(INTENSITY) {}
 //float AmbientLight::compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity)
-float AmbientLight::compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity, const std::function<float(const Vec3 &, const Vec3 &, const float, const float, const std::vector<Shape *> &, Shape * &)> & closest_intersection, const std::vector<Shape *> & shapes)
+float AmbientLight::compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity)
 {
     return INTENSITY;
+}
+
+Vec3 AmbientLight::get_direction(Vec3 & point)
+{
+    return Vec3(0.0, 0.0, 0.0);
 }
 
 
@@ -384,7 +389,7 @@ DirectionalLight::DirectionalLight() : direction(Vec3()) {}
 DirectionalLight::DirectionalLight(const float INTENSITY, const Vec3 & direction) : Light(INTENSITY), direction(direction) { return; }
 
 //float DirectionalLight::compute_lighting(const Vec3 & point, const Vec3 & normal, const Vec3 & view, const float specularity)
-float DirectionalLight::compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity, const std::function<float(const Vec3 &, const Vec3 &, const float, const float, const std::vector<Shape *> &, Shape * &)> & closest_intersection, const std::vector<Shape *> & shapes)
+float DirectionalLight::compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity)
 {
     float i = 0.0;
     Vec3 L = direction;
@@ -394,7 +399,7 @@ float DirectionalLight::compute_lighting(const Vec3& point, const Vec3& normal, 
     // Shadow check
 //    Sphere* shadow_sphere = nullptr;
     Shape * shadow_shape = nullptr;
-    closest_intersection(point, L, 0.001f, t_max, shapes, shadow_shape);
+    //closest_intersection(point, L, 0.001f, t_max, shapes, shadow_shape);
 
     if (shadow_shape) return i;
 
@@ -418,13 +423,17 @@ float DirectionalLight::compute_lighting(const Vec3& point, const Vec3& normal, 
     return i;
 }
 
+Vec3 DirectionalLight::get_direction(Vec3 & point)
+{
+    return direction;
+}
 
 
 PointLight::PointLight() : position(Vec3()) { return; }
 PointLight::PointLight(const float INTENSITY, const Vec3 & position) : Light(INTENSITY), position(position) { return; }
 
 //float PointLight::compute_lighting(const Vec3 & point, const Vec3 & normal, const Vec3 & view, const float specularity)
-float PointLight::compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity, const std::function<float(const Vec3 &, const Vec3 &, const float, const float, const std::vector<Shape *> &, Shape * &)> & closest_intersection, const std::vector<Shape *> & shapes)
+float PointLight::compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity)
 {
     float i = 0.0;
     Vec3 L = position - point;
@@ -432,7 +441,7 @@ float PointLight::compute_lighting(const Vec3& point, const Vec3& normal, const 
     float t_max = 1;
 
     Shape * shadow_shape = nullptr;
-    closest_intersection(point, L, 0.001f, t_max, shapes, shadow_shape);
+    //closest_intersection(point, L, 0.001f, t_max, shapes, shadow_shape);
     if (shadow_shape) return i;
 
     if (n_dot_l > 0) // Make sure we don't add negative spaces (if n_dot_l <= 0)
@@ -453,3 +462,9 @@ float PointLight::compute_lighting(const Vec3& point, const Vec3& normal, const 
     }
     return i;
 }
+
+Vec3 PointLight::get_direction(Vec3 & point)
+{
+    return position;
+}
+

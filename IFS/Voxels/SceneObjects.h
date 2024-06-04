@@ -151,8 +151,8 @@ public:
 	Light(const float INTENSITY);
 	virtual ~Light() = 0;
 
-//float Camera::closest_intersection(const Vec3 & origin, const Vec3 & direction, const float t_min, const float t_max, const std::vector<Shape *> & shapes, Shape * & closest_shape)
-	virtual float compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity, const std::function<float(const Vec3 &, const Vec3 &, const float, const float, const std::vector<Shape *> &, Shape * &)> & closest_intersection, const std::vector<Shape *> & shapes) = 0;
+	virtual float compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity) = 0;
+	virtual Vec3 get_direction(Vec3 & point) = 0;
 
 protected:
 	const float INTENSITY;
@@ -168,9 +168,10 @@ class AmbientLight : public Light
 		AmbientLight();
 		AmbientLight(const float INTENSITY);
 
+		Vec3 get_direction(Vec3 & point);
+
 		// Compute lighting for some point P with normal N
-	//	float compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity);
-		float compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity, const std::function<float(const Vec3 &, const Vec3 &, const float, const float, const std::vector<Shape *> &, Shape * &)> & closest_intersection, const std::vector<Shape *> & shapes);
+		float compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity);
 };
 
 
@@ -183,9 +184,10 @@ class DirectionalLight : public Light
 	public:
 		DirectionalLight();
 		DirectionalLight(const float INTENSITY, const Vec3 & direction);
+		
+		Vec3 get_direction(Vec3 & point);
 
-	//	float compute_lighting(const Vec3 & point, const Vec3 & normal, const Vec3 & view, const float specularity);
-		float compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity, const std::function<float(const Vec3 &, const Vec3 &, const float, const float, const std::vector<Shape *> &, Shape * &)> & closest_intersection, const std::vector<Shape *> & shapes);
+		float compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity);
 
 	private:
 		Vec3 direction;
@@ -201,9 +203,11 @@ class PointLight : public Light
 	public:
 		PointLight();
 		PointLight(const float INTENSITY, const Vec3 & position);
+		
+		Vec3 get_direction(Vec3 & point);
 
 		//float compute_lighting(const Vec3 & point, const Vec3 & normal, const Vec3 & view, const float specularity);
-		float compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity, const std::function<float(const Vec3 &, const Vec3 &, const float, const float, const std::vector<Shape *> &, Shape * &)> & closest_intersection, const std::vector<Shape *> & shapes);
+		float compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity);
 
 	private:
 		Vec3 position;

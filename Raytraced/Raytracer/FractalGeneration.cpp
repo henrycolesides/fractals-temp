@@ -79,8 +79,8 @@ void cube(const Vec3& a, const Vec3& b, const Vec3& c, const Vec3& d, int depth,
 	shapes.push_back(new Triangle(a, c, b, Color(255, 0, 0), 300.0, 0.2f, INFINITY));
 	shapes.push_back(new Triangle(b, c, d, Color(255, 0, 0), 300.0, 0.2f, INFINITY));
     
-	shapes.push_back(new Triangle(e, g, f, Color(255, 0, 0), 300.0, 0.2f, INFINITY));
-	shapes.push_back(new Triangle(f, g, h, Color(255, 0, 0), 300.0, 0.2f, INFINITY));
+	shapes.push_back(new Triangle(e, f, g, Color(255, 0, 0), 300.0, 0.2f, INFINITY));
+	shapes.push_back(new Triangle(g, f, h, Color(255, 0, 0), 300.0, 0.2f, INFINITY));
 
 	shapes.push_back(new Triangle(e, g, a, Color(255, 0, 0), 300.0, 0.2f, INFINITY));
 	shapes.push_back(new Triangle(a, g, c, Color(255, 0, 0), 300.0, 0.2f, INFINITY));

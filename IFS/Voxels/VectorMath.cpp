@@ -54,9 +54,23 @@ float Vec3::get(const char dimension) const
     }
 }
 
+float Vec3::get(const int dimension) const
+{
+    if(dimension < 0 || dimension > 2) return 0.0;
+    return values[dimension];
+}
+
 float Vec3::length() const
 {
     return std::sqrt((values[0] * values[0]) + (values[1] * values[1]) + (values[2] * values[2]));
+}
+
+void Vec3::normalize()
+{
+    float m = length();
+    values[0] = values[0] / m;
+    values[1] = values[1] / m;
+    values[2] = values[2] / m;
 }
 
 void Vec3::rotate_about_y(const float angle)

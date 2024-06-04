@@ -1,7 +1,10 @@
 // Octree.h
 // Provides definitions for my implementation of a Sparse Voxel Octree (SVO) for efficient storage of voxel data
 // Used by Voxel Raycaster to find voxel state and bounds for any particular point in 3d space
+#ifndef OCTREE_H
+#define OCTREE_H
 
+#include <vector>
 #include "VectorMath.h"
 #include "SceneObjects.h"
 
@@ -59,18 +62,24 @@ struct Face {
 class Node {
 
     public:
-        Node();
-        Node(const Bounds & bounds, const Color color, const bool filled);
+        Node(const Bounds & bounds);
+        Node(const Bounds & bounds, const Color & color, const bool filled);
         
         // Fetches pointer to the child at index in children
         Node * &  get_child(const int index);
 
         // Fetches pointer to child which contains point
         Node * & get_child(const Vec3 & point);
-    
+
+        // Finds index of child adjacent to children[index] sharing point 
+        int get_adjacent_index(const Vec3 & point, const int index);
+
         // Evaluates if some node's bounds contain point 
         bool check_contains(const Vec3 & point); 
 
+        // Returns true or false indicating if some point lies on the outer bounds of a node
+        bool check_on_bounds(const Vec3 & point);
+        
         // Subdivides based on bounds, adding some child whose bounds contain point/
         // Returns pointer to new child
         Node * & add_child(const Vec3 & point);
@@ -79,17 +88,32 @@ class Node {
         // This provides data for rendering some face to the canvas
         Face get_face_at_intersection(const Vec3 & point);
 
+        // Returns bounds{min, max} of some octant based on the given index 0-7
+        Bounds get_bounds_from_index(const int index);
+
+        // Returns index 0-7 based on some point in bounds
+        int get_index_from_point(const Vec3 & point);
+
+        Vec3 get_intersection(Vec3 & origin, Vec3 & direction, Bounds & bounds);
+        Vec3 get_my_intersection(Vec3 & origin, Vec3 & direction);
+        Vec3 get_child_intersection(Vec3 & origin, Vec3 & direction, const int index);
+
+        int which_face(Vec3 & point);
+
+        Color get_color();
         bool check_filled();
         void set_filled();
 
+        bool check_split();
+        void set_split();
+
+        void test_display();
     private:
         Bounds bounds;
         Color color;
         bool filled;
+        bool split;
         Node * children[8];
-
-        Bounds get_bounds_from_index(const int index);
-        int get_index_from_point(const Vec3 & point);
 };
 
 
@@ -106,5 +130,29 @@ class Node {
 
 
 class Octree {
+    public:
+        Octree();
+        Octree(const Bounds initial_bounds, const int max_depth);
+        ~Octree();
 
+        void insert(const Vec3 & point);
+        Bounds retrieve(const Vec3 & point);
+
+        Color intersect_ray(Vec3 & origin, Vec3 & direction, const std::vector<Light *> lights);
+
+
+        void test_display();
+    private:
+        Node * root;
+        int max_depth;
+
+        void insert(Node *& root, const Vec3 & point, int depth);
+        void remove_all(Node * & root);
+        
+        Vec3 intersect_ray(Vec3 & origin, Vec3 & direction, Node * root, Color & color, Vec3 & normal);
+        
+        void test_display(Node * root, int depth);
+    private:
 };
+
+#endif
