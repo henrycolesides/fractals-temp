@@ -30,6 +30,3 @@ $(MATH).o: $(MATH).cpp $(MATH).h
 
 clean:
 	rm -f *.o $(PROG) \#*
-
-cleani:
-	rm *.ppm *.png

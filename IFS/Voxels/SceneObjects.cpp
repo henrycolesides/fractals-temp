@@ -72,6 +72,11 @@ Color& Color::operator-=(const float op2)
     return *this;
 }
 
+bool operator==(const Color & op1, const Color & op2)
+{
+    return op1.values[0] == op2.values[0] && op1.values[1] == op2.values[1] && op1.values[2] == op2.values[2];
+}
+
 Color operator*(const Color& op1, const Color& op2)
 {
     Color temp = Color(op1);
@@ -178,6 +183,26 @@ Color operator-(const float op1, const Color& op2)
     temp.values[1] = (temp.values[1] - op1 > 255 ? 255 : temp.values[1] - op1);
     temp.values[2] = (temp.values[2] - op1 > 255 ? 255 : temp.values[2] - op1);
     return temp;
+}
+
+Color lerp(const Color & from, const Color & to, const float t)
+{
+   // return ((to - from) * t) + from;
+   return  (from * (1 - t)) + (to * t);
+}
+
+Color lerp3(const Color & from, const Color & middle, const Color & to, const float t)
+{
+    return lerp(lerp(from, middle, t), to, t);
+    //return (from * (1 - t)) + (middle * (t - (t * t))) + (to * t);
+}
+
+
+void Color::unbounded_add(const Color op2)
+{
+    values[0] += op2.values[0];
+    values[1] += op2.values[1];
+    values[2] += op2.values[2];
 }
 
 std::ostream & operator<<(std::ostream & out, const Color & op2)
@@ -373,7 +398,7 @@ Light::~Light() { return; }
 AmbientLight::AmbientLight() {}
 AmbientLight::AmbientLight(const float INTENSITY) : Light(INTENSITY) {}
 //float AmbientLight::compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity)
-float AmbientLight::compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity)
+float AmbientLight::compute_lighting(const Vec3& point, Vec3& normal, const Vec3 & view, const float specularity)
 {
     return INTENSITY;
 }
@@ -389,19 +414,13 @@ DirectionalLight::DirectionalLight() : direction(Vec3()) {}
 DirectionalLight::DirectionalLight(const float INTENSITY, const Vec3 & direction) : Light(INTENSITY), direction(direction) { return; }
 
 //float DirectionalLight::compute_lighting(const Vec3 & point, const Vec3 & normal, const Vec3 & view, const float specularity)
-float DirectionalLight::compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity)
+float DirectionalLight::compute_lighting(const Vec3& point, Vec3& normal, const Vec3 & view, const float specularity)
 {
     float i = 0.0;
     Vec3 L = direction;
-    float n_dot_l = L * normal;
+    //L.normalize();
+    float n_dot_l = normal * L;//L * normal;
     float t_max = INFINITY;
-
-    // Shadow check
-//    Sphere* shadow_sphere = nullptr;
-    Shape * shadow_shape = nullptr;
-    //closest_intersection(point, L, 0.001f, t_max, shapes, shadow_shape);
-
-    if (shadow_shape) return i;
 
     // Diffuse reflection (matte)
     if (n_dot_l > 0) // Make sure we don't add negative spaces (if n_dot_l <= 0)
@@ -414,6 +433,7 @@ float DirectionalLight::compute_lighting(const Vec3& point, const Vec3& normal, 
     if (specularity != -1) // if surface is shiny
     {
         Vec3 R = (2.0 * normal * (n_dot_l)) - L;
+        R.normalize();
         float r_dot_v = R * view;
         if (r_dot_v > 0) // Make sure we don't add negative light intensity
         {
@@ -433,38 +453,66 @@ PointLight::PointLight() : position(Vec3()) { return; }
 PointLight::PointLight(const float INTENSITY, const Vec3 & position) : Light(INTENSITY), position(position) { return; }
 
 //float PointLight::compute_lighting(const Vec3 & point, const Vec3 & normal, const Vec3 & view, const float specularity)
-float PointLight::compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity)
+float PointLight::compute_lighting(const Vec3& point, Vec3& normal, const Vec3 & view, const float specularity)
 {
-    float i = 0.0;
+    //float i = 0.0;
+    //Vec3 L = position - point;
+    //L.normalize();
+    //normal.normalize();
+    //float n_dot_l = L * normal;//L * normal;
+    //float t_max = 1;
+    
+    //if (n_dot_l > 0) // Make sure we don't add negative spaces (if n_dot_l <= 0)
+    //{
+    //    //i += (intensity * (n_dot_l / N.length()) * L.length());
+    //    i += (INTENSITY * n_dot_l / (normal.length() * L.length()));
+    //}
+
+    ////Specular reflection(shiny)
+    //if (specularity != -1) // if surface is shiny
+    //{
+    //    //L.normalize();
+    //    Vec3 R = (2.0 * normal * (n_dot_l)) - L;
+    //    float r_dot_v = R * view;
+    //    if (r_dot_v > 0) // Make sure we don't add negative light intensity
+    //    {
+    //     //   std::cout << "Got here!";
+    //        i += (INTENSITY * std::pow(r_dot_v / (R.length() * view.length()), specularity));
+    //    }
+    //}
+    //return i;
+
+    float intensity = 0.0;
     Vec3 L = position - point;
-    float n_dot_l = L * normal;
-    float t_max = 1;
+    L.normalize(); // Ensure the direction vector is normalized
+    Vec3 N = normal;
+    N.normalize(); // Ensure the normal vector is normalized
+    Vec3 V = view;
+    V.normalize(); // Ensure the view vector is normalized
 
-    Shape * shadow_shape = nullptr;
-    //closest_intersection(point, L, 0.001f, t_max, shapes, shadow_shape);
-    if (shadow_shape) return i;
+    float n_dot_l = N * L;
 
-    if (n_dot_l > 0) // Make sure we don't add negative spaces (if n_dot_l <= 0)
-    {
-        //i += (intensity * (n_dot_l / N.length()) * L.length());
-        i += (INTENSITY * n_dot_l / (normal.length() * L.length()));
+    // Diffuse reflection (matte)
+    if (n_dot_l > 0) {
+        intensity += INTENSITY * n_dot_l;
     }
 
-    // Specular reflection(shiny)
-    if (specularity != -1) // if surface is shiny
-    {
-        Vec3 R = (2.0 * normal * (n_dot_l)) - L;
-        float r_dot_v = R * view;
-        if (r_dot_v > 0) // Make sure we don't add negative light intensity
-        {
-            i += (INTENSITY * std::pow(r_dot_v / (R.length() * view.length()), specularity));
+    // Specular reflection (shiny)
+    if (specularity != -1) {
+        Vec3 R = 2.0 * N * n_dot_l - L; // Calculate the reflection vector
+        R.normalize(); // Normalize the reflection vector
+
+        float r_dot_v = R * V;
+        if (r_dot_v > 0) {
+            intensity += INTENSITY * std::pow(r_dot_v, specularity);
         }
     }
-    return i;
+
+    return intensity;
 }
 
 Vec3 PointLight::get_direction(Vec3 & point)
 {
-    return position;
+    return Vec3(position - point);
 }
 

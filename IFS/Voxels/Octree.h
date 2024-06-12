@@ -94,11 +94,12 @@ class Node {
         // Returns index 0-7 based on some point in bounds
         int get_index_from_point(const Vec3 & point);
 
-        Vec3 get_intersection(Vec3 & origin, Vec3 & direction, Bounds & bounds);
-        Vec3 get_my_intersection(Vec3 & origin, Vec3 & direction);
-        Vec3 get_child_intersection(Vec3 & origin, Vec3 & direction, const int index);
+        Vec3 get_intersection(Vec3 & origin, const Vec3 & direction, Bounds & bounds);
+        Vec3 get_my_intersection(Vec3 & origin, const Vec3 & direction);
+        Vec3 get_child_intersection(Vec3 & origin, const Vec3 & direction, const int index);
 
-        int which_face(Vec3 & point);
+        //int which_face(Vec3 & point);
+        Vec3 which_face(Vec3 & point);
 
         Color get_color();
         bool check_filled();
@@ -132,24 +133,27 @@ class Node {
 class Octree {
     public:
         Octree();
+        Octree(const Bounds initial_bounds, const Bounds floor_bounds, const int max_depth);
         Octree(const Bounds initial_bounds, const int max_depth);
         ~Octree();
 
-        void insert(const Vec3 & point);
+        void insert(const Vec3 & point, Color color);
         Bounds retrieve(const Vec3 & point);
 
-        Color intersect_ray(Vec3 & origin, Vec3 & direction, const std::vector<Light *> lights);
+        Color intersect_ray(Vec3 & origin, const Vec3 & direction, const std::vector<Light *> & lights);
 
 
         void test_display();
     private:
         Node * root;
+        Node * floor;
+
         int max_depth;
 
-        void insert(Node *& root, const Vec3 & point, int depth);
+        void insert(Node *& root, const Vec3 & point, int depth, Color color);
         void remove_all(Node * & root);
         
-        Vec3 intersect_ray(Vec3 & origin, Vec3 & direction, Node * root, Color & color, Vec3 & normal);
+        Vec3 intersect_ray(Vec3 & origin, const Vec3 & direction, Node * root, Color & color, Vec3 & normal);
         
         void test_display(Node * root, int depth);
     private:

@@ -17,6 +17,12 @@ using std::cout, std::min, std::max;
 
 #define MISS_VECTOR Vec3(INFINITY, -INFINITY, 0.0)
 #define BACKGROUND Color(0, 0, 0)
+
+#define BABY_BLUE Color(179, 205, 224)
+#define ROSY_PINK Color(244, 194, 194)
+#define BLUE Color(0, 0, 230)
+#define WHITE Color(230, 230, 230)
+
 #define EPSILON 0.0001
 
 enum FACE {BACK, FRONT, TOP, BOTTOM, RIGHT, LEFT};
@@ -201,7 +207,7 @@ Color Node::get_color()
 
 // Given some bounds, find tmin, tmax for the ray origin + (direction * t) with those bounds
 // Z coordinate of returned Vec3 is 0.0 for miss, 1.0 for hit
-Vec3 Node::get_intersection(Vec3 & origin, Vec3 & direction, Bounds & bounds)
+Vec3 Node::get_intersection(Vec3 & origin, const Vec3 & direction, Bounds & bounds)
 {
     //// Calculate the inverse of the ray direction components
     //Vec3 dirfrac = Vec3(1.0 / direction.get(X), 1.0 / direction.get(Y), 1.0 / direction.get(Z));
@@ -251,7 +257,7 @@ Vec3 Node::get_intersection(Vec3 & origin, Vec3 & direction, Bounds & bounds)
     // If tmax < 0, the intersection is behind the ray's origin
     // If tmin > tmax, the ray misses the bounding box
     if(tmax < 0 || tmin > tmax)
-    {
+{
         return MISS_VECTOR;
     }
     else 
@@ -261,26 +267,73 @@ Vec3 Node::get_intersection(Vec3 & origin, Vec3 & direction, Bounds & bounds)
     }
 }
 
-Vec3 Node::get_my_intersection(Vec3 & origin, Vec3 & direction)
+Vec3 Node::get_my_intersection(Vec3 & origin, const Vec3 & direction)
 {
     return get_intersection(origin, direction, bounds);
 }
 
-Vec3 Node::get_child_intersection(Vec3 & origin, Vec3 & direction, const int index)
+Vec3 Node::get_child_intersection(Vec3 & origin, const Vec3 & direction, const int index)
 {
     Bounds child_bounds = get_bounds_from_index(index);
     return get_intersection(origin, direction, child_bounds);
 }
 
-int Node::which_face(Vec3 & point)
+Vec3 Node::which_face(Vec3 & point)
 {
-    if(point.get(Z) < bounds.max.get(Z) + 0.0001 && point.get(Z) > bounds.max.get(Z) - 0.0001) return FACE::BACK;
-    if(point.get(Z) < bounds.min.get(Z) + 0.0001 && point.get(Z) > bounds.min.get(Z) - 0.0001) return FACE::FRONT;
-    if(point.get(Y) < bounds.max.get(Y) + 0.0001 && point.get(Y) > bounds.max.get(Y) - 0.0001) return FACE::TOP;
-    if(point.get(Y) < bounds.min.get(Y) + 0.0001 && point.get(Y) > bounds.min.get(Y) - 0.0001) return FACE::BOTTOM;
-    if(point.get(X) < bounds.max.get(X) + 0.0001 && point.get(X) > bounds.max.get(X) - 0.0001) return FACE::RIGHT;
-    if(point.get(X) < bounds.min.get(X) + 0.0001 && point.get(X) > bounds.min.get(X) - 0.0001) return FACE::LEFT;
-    return -1;
+    // Known issue - cases where some point lies on the corner of face bounds - which vector to choose?
+    // For now, I prioritize top-bottom, back-front, and right-left in that order
+    // Theres definitely a better way to get normal values
+    int count = 0;
+    int face = -1;
+    if(point.get(Y) < bounds.max.get(Y) + 0.0001 && point.get(Y) > bounds.max.get(Y) - 0.0001) 
+    {
+        return Vec3(0.0, 1.0, 0.0);
+        //return FACE::TOP;
+        //++count;
+        //face = FACE::TOP;
+    }
+    if(point.get(Y) < bounds.min.get(Y) + 0.0001 && point.get(Y) > bounds.min.get(Y) - 0.0001)
+    {
+        return Vec3(0.0, -1.0, 0.0);
+        //return FACE::BOTTOM;
+        //++count;
+        //face = FACE::BOTTOM;
+    }
+    if(point.get(Z) < bounds.max.get(Z) + 0.0001 && point.get(Z) > bounds.max.get(Z) - 0.0001)
+    {
+        return Vec3(0.0, 0.0, 1.0);
+        //return FACE::BACK;
+        //++count;
+        //face = FACE::BACK;
+    }
+    if(point.get(Z) < bounds.min.get(Z) + 0.0001 && point.get(Z) > bounds.min.get(Z) - 0.0001) 
+    {
+        return Vec3(0.0, 0.0, -1.0);
+        //return FACE::FRONT;
+        //++count;
+        //face = FACE::FRONT;
+    }
+    if(point.get(X) < bounds.max.get(X) + 0.0001 && point.get(X) > bounds.max.get(X) - 0.0001) 
+    {
+        return Vec3(1.0, 0.0, 0.0);
+        //return FACE::RIGHT;
+        //++count;
+        //face = FACE::RIGHT;
+    }
+    if(point.get(X) < bounds.min.get(X) + 0.0001 && point.get(X) > bounds.min.get(X) - 0.0001)
+    {
+        return Vec3(-1.0, 0.0, 0.0);
+        //return FACE::LEFT;
+        //++count;
+        //face = FACE::LEFT;
+    }
+
+    //if(count != 1)
+    //{
+    //    return -1;
+    //}
+
+    return Vec3(0.0, 1.0, 0.0);
 }
 
 
@@ -289,13 +342,20 @@ int Node::which_face(Vec3 & point)
 
 
 Octree::Octree() : root(nullptr), max_depth(0) {}
-Octree::Octree(const Bounds initial_bounds, const int max_depth) : root(nullptr), max_depth(max_depth) 
+
+Octree::Octree(const Bounds initial_bounds, const Bounds floor_bounds, const int max_depth) : max_depth(max_depth) 
+{
+    root = new Node(initial_bounds, Color(0, 255, 0), false);
+    floor = new Node(floor_bounds, Color(139, 90, 43), true);
+}
+
+Octree::Octree(const Bounds initial_bounds, const int max_depth) : root(nullptr), floor(nullptr), max_depth(max_depth) 
 {
     root = new Node(initial_bounds, Color(0, 255, 0), false);
 }
 
 
-void Octree::insert(const Vec3 & point)
+void Octree::insert(const Vec3 & point, Color color)
 {
     // Empty tree case
     if(!root) return;
@@ -303,10 +363,10 @@ void Octree::insert(const Vec3 & point)
     // Point outside case
     if(!root->check_contains(point)) return;
 
-    insert(root, point, 0);
+    insert(root, point, 0, color);
 }
 
-void Octree::insert(Node * & root, const Vec3 & point, int depth)
+void Octree::insert(Node * & root, const Vec3 & point, int depth, Color color)
 {
     if(depth > max_depth) return;
     int index = root->get_index_from_point(point);
@@ -320,7 +380,7 @@ void Octree::insert(Node * & root, const Vec3 & point, int depth)
         // If we've reached max depth, make a new filled child!
         if(depth == max_depth)
         {
-            temp = new Node(root->get_bounds_from_index(index), Color(255, 0, 0), true);
+            temp = new Node(root->get_bounds_from_index(index), color, true);
             return;
         }
         else // Else make a new child 
@@ -333,7 +393,7 @@ void Octree::insert(Node * & root, const Vec3 & point, int depth)
         // Found a filled square where the point belongs - no work to be done!
         if(depth == max_depth) return;
     }
-    insert(temp, point, ++depth);
+    insert(temp, point, ++depth, color);
     return;
 }
 
@@ -435,7 +495,9 @@ void Octree::test_display(Node * root, int depth)
 //    }
 //}
 
-Color Octree::intersect_ray(Vec3 & origin, Vec3 & direction, const std::vector<Light *> & lights)
+Color lerp(const Color & from, const Color & to, const float t);
+
+Color Octree::intersect_ray(Vec3 & origin, const Vec3 & direction, const std::vector<Light *> & lights)
 {
     // If tree is empty, return background color
     if(!root) return BACKGROUND;
@@ -444,47 +506,74 @@ Color Octree::intersect_ray(Vec3 & origin, Vec3 & direction, const std::vector<L
     Vec3 t = root->get_my_intersection(origin, direction);
 
     // If ray misses entirely, return background color
-    if(t.get(Z) == MISS) return BACKGROUND;
+    if(t.get(Z) == MISS) 
+    {
+        return BACKGROUND;
+        //return lerp(Color(245, 245, 220), Color(163, 213, 255), 0.5 + direction.get(Y));
+    }
 
     Color to_fill;
     Vec3 intersection;
     Vec3 hits;
+    Vec3 normal;
+
     // If tmin is negative, the ray origin is within root's bounds!
     if(t.get(X) < 0.0)
     {
         intersection = origin;
-        hits = intersect_ray(intersection, direction, root, to_fill);
+        hits = intersect_ray(intersection, direction, root, to_fill, normal);
     }
     else // If not, ray origin hits root, but is outside it
     {
         intersection = origin + (direction * t.get(X));
-        hits = intersect_ray(intersection, direction, root, to_fill);
+        hits = intersect_ray(intersection, direction, root, to_fill, normal);
+    }
+
+    if(hits.get(Z) != HIT_FILLED && floor)
+    {
+        hits = floor->get_my_intersection(intersection, direction);
+        if(hits.get(Z) == HIT_FILLED)
+        {
+            Vec3 floor_landing = intersection + (direction * (hits.get(X) - 0.00001));
+            to_fill = floor->get_color();
+            normal = floor->which_face(floor_landing);
+        }
     }
 
     if(hits.get(Z) == HIT_FILLED)
     {
         // Once a hit is found, calculate lighting from the hit
-        Vec3 light_origin = intersection + (direction * hits.get(X)); 
+        Vec3 light_origin = intersection + (direction * (hits.get(X) - 0.00001)); 
         Vec3 light_direction;
+        Vec3 empty_normal = Vec3();
         Color empty_color = Color();
 
         float intensity = 0.0;
         for(auto light : lights)
         {
-            light_direction = light->get_direction(light_origin);
-            intersection = light_origin;
-
-
-            hits = intersect_ray(intersection, light_direction, root, empty_color);
-            if(hits.get(Z) != HIT_FILLED)
+            AmbientLight * a = dynamic_cast<AmbientLight *>(light);
+            if(!a)
             {
-                intensity += light->compute_lighting(light_origin, normal, -direction, specularity);
+                light_direction = light->get_direction(light_origin);
+                intersection = light_origin;
+
+                hits = intersect_ray(intersection, light_direction, root, empty_color, empty_normal);
+
+                // If there isn't a filled voxel in the way
+                if(hits.get(Z) != HIT_FILLED)
+                {
+                    intensity += light->compute_lighting(light_origin, normal, -direction, 1000.0);
+                }
             }
+            else intensity += light->compute_lighting(light_origin, normal, -direction, 20.0);
         }
-        return to_fill;
+        return to_fill * intensity;
+        //return to_fill;
     }
     else
     {
+        // White-Blue gradient
+        //return lerp(Color(245, 245, 220), Color(163, 213, 255), 0.5 + direction.get(Y));
         return BACKGROUND;
     }
 }
@@ -493,39 +582,47 @@ Color Octree::intersect_ray(Vec3 & origin, Vec3 & direction, const std::vector<L
 // Private recursive for tree intersection traversal
 // Must return t values for some node based on origin, direction of ray
 // Based on t values, previous function on the stack can determine which of its next children to traverse to
-Vec3 Octree::intersect_ray(Vec3 & origin, Vec3 & direction, Node * root, Color & to_fill, Vec3 & normal)
+Vec3 Octree::intersect_ray(Vec3 & origin, const Vec3 & direction, Node * root, Color & to_fill, Vec3 & normal)
 {
     if(!root) return MISS_VECTOR;
     if(root->check_filled())
     {
         //std::cout << "Found filled\n";
         to_fill = root->get_color();
-        Vec3 t = root->get_my_intersection(origin, direction);
-        Vec3 entry = origin + (direction * t.get(X));
-        int face = root->which_face(entry);
-        switch(face)
-        {
-            case FACE::BACK: normal = Vec3(0.0, 0.0, 1.0);
-                break;
-            case FACE::FRONT:
-                normal = Vec3(0.0, 0.0, -1.0);
-                break;
-            case FACE::TOP:
-                normal = Vec3(0.0, 1.0, 0.0);
-                break;
-            case FACE::BOTTOM:
-                normal = Vec3(0.0, -1.0, 0.0);
-                break;
-            case FACE::RIGHT:
-                normal = Vec3(1.0, 0.0, 0.0);
-                break;
-            case FACE::LEFT:
-                normal = Vec3(-1.0, 0.0, 0.0);
-                break;
-            default:
-                normal = Vec3(0.0, 0.0, 0.0);
-                break;
-        }
+        Vec3 ct = root->get_my_intersection(origin, direction);
+        Vec3 entry = origin + (direction * ct.get(X));
+        normal = root->which_face(entry);
+        //switch(face)
+        //{
+        //    case FACE::BACK: 
+        //        normal = Vec3(0.0, 0.0, 1.0);
+        //        break;
+        //    case FACE::FRONT:
+        //        normal = Vec3(0.0, 0.0, -1.0);
+        //        break;
+        //    case FACE::TOP:
+        //        normal = Vec3(0.0, 1.0, 0.0);
+        //        break;
+        //    case FACE::BOTTOM:
+        //        normal = Vec3(0.0, -1.0, 0.0);
+        //        break;
+        //    case FACE::RIGHT:
+        //        normal = Vec3(1.0, 0.0, 0.0);
+        //        break;
+        //    case FACE::LEFT:
+        //        normal = Vec3(-1.0, 0.0, 0.0);
+        //        break;
+        //    default:
+        //        normal = Vec3(0.0, 1.0, 0.0);
+        //        break;
+        //    //default:
+        //    //    //std::cout << "Got here!\n";
+        //    //    //normal = -direction;
+        //    //    //normal.normalize();
+        //    //    break;
+        //}
+        //return Vec3(0.0, 0.0, HIT_FILLED);
+        return ct;
     }
     else
     {
@@ -548,7 +645,7 @@ Vec3 Octree::intersect_ray(Vec3 & origin, Vec3 & direction, Node * root, Color &
                 // If root is split
 
                 // PUSH down to next node
-                t = intersect_ray(origin, direction, root->get_child(index), to_fill);
+                t = intersect_ray(origin, direction, root->get_child(index), to_fill, normal);
 
                 // Case 1: found a filled hit 
                 if(t.get(Z) == HIT_FILLED)
@@ -590,6 +687,7 @@ Vec3 Octree::intersect_ray(Vec3 & origin, Vec3 & direction, Node * root, Color &
 
 Octree::~Octree()
 {
+    if(floor) delete floor;
     if(!root) return;
     remove_all(root);
 }

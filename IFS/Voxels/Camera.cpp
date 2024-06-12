@@ -24,7 +24,7 @@ Camera::Camera(const Vec3& origin, const uint32_t frame_width, const uint32_t fr
 
 
 
-void Camera::render(Octree & octree)
+void Camera::render(Octree & octree, const std::vector<Light *> & lights)
 {
 	//if (!pixels) return;
 	
@@ -36,6 +36,9 @@ void Camera::render(Octree & octree)
 	
     //origin.rotate_about_y(0.3);
 
+    int extra_samples = 4;
+    Color current;
+
     int num_frames = 1;
     float angle = ((6.28319) / (float)num_frames);
     //float theta = 0.0;
@@ -46,7 +49,8 @@ void Camera::render(Octree & octree)
 
         sprintf(fname, "test%02d.ppm", f) ;
         output.open(fname, std::fstream::out | std::fstream::trunc);    
-        output << "P3\n" << 720 << ' ' << 720 << "\n255\n";
+        output << "P3\n" << frame_width << ' ' << frame_height << "\n255\n";
+        //output << "P3\n" << 720 << ' ' << 720 << "\n255\n";
         
         //for(auto shape : shapes)
         //{
@@ -54,32 +58,47 @@ void Camera::render(Octree & octree)
         //}
 
         Vec3 ray_direction = Vec3(0.0, 0.0, viewport_distance);
+        Color current;
+
+        // 4 SPP
+        float samples_per_pixel     = 4.0;
+        float sample_subdivisions   = 4.0; 
+
+        // 16 SPP
+        //float samples_per_pixel     = 16.0;
+        //float sample_subdivisions   = 8.0; 
+
         //for (int j = -(frame_height / 2); j < (frame_height / 2); ++j)
         for (int j = (frame_height / 2); j > -(frame_height / 2); --j)
         {
             for (int i = -(frame_width / 2); i < (frame_width / 2); ++i)
             {
-                int x = convert_screen_x(i);
-                int y = convert_screen_y(j);
+                Color total = Color(0, 0, 0);
+                //int x = convert_screen_x(i);
+                //int y = convert_screen_y(j);
                 
-                ray_direction.set(X, convert_viewport_x(i));
-                ray_direction.set(Y, convert_viewport_y(j));
+                //ray_direction.set(X, convert_viewport_x(float(i)));
+                //ray_direction.set(Y, convert_viewport_y(float(j)));
 
                 //float length = ray_direction.length();
                 //ray_direction.normalize();
                 //ray_direction.rotate_about_y(0.785);
                 //ray_direction = ray_direction * length;
 
+                // Super sampling 
 
-                //ray_direction.normalize();
-                //ray_direction.set(Z, viewport_distance);
-                //ray_direction.normalize();
-       //         origin.rotate_about_y(angle);
-                //pixels[(y * frame_width) + x] = trace_ray(origin, ray_direction, 1.0, 1, INFINITY, 3, shapes, lights).map_color();
-                //output << trace_ray(origin, ray_direction, 1.0, 1, INFINITY, 3, shapes, lights) << '\n';
-				//Color color = octree.intersect_ray(origin, ray_direction);
-				//std::cout << color;
-				output << octree.intersect_ray(origin, ray_direction);
+                for(int sy = 1; sy < sample_subdivisions; sy += 2)
+                {
+                    for(int sx = 1; sx < sample_subdivisions; sx += 2)
+                    {
+                        ray_direction.set(X, convert_viewport_x(float(i) + (float(sx) / sample_subdivisions)));
+                        ray_direction.set(Y, convert_viewport_y(float(j) + (float(sy) / sample_subdivisions)));
+                        total.unbounded_add(octree.intersect_ray(origin, ray_direction, lights));                        
+                    }
+                }
+                
+                total /= samples_per_pixel;
+				output << total;
             }
         }
 

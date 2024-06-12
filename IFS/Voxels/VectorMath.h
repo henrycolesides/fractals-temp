@@ -13,6 +13,7 @@
 #define Z 'z'
 
 class Shape;
+struct Matrix3x3;
 
 class Vec3
 {
@@ -40,6 +41,8 @@ class Vec3
 		Vec3& operator/=(const float op2);
         
         void rotate_about_y(const float angle);
+        void rotate_about_z(const float angle);
+		void rotate_about_x(const float angle);
 
 		// Scalar friends
 		friend Vec3 operator*(const Vec3& op1, const float op2);
@@ -51,9 +54,14 @@ class Vec3
 
 		friend Vec3 cross(const Vec3& op1, const Vec3& op2);
 
+
 		friend void koch_snowflake3d(const Vec3& a, const Vec3& b, const Vec3& c, int depth, int max, std::vector<Shape *> & shapes);
 		friend float distance_between_points(const Vec3& op1, const Vec3& op2);
 
+		friend Matrix3x3 mmultiply(const Matrix3x3 a, const Matrix3x3 b);
+
+		void transform(const Vec3 & i, const Vec3 & j, const Vec3 & k);
+		void scale(const Vec3 & scale);
 		float length() const;
 		void normalize();
 		void set(const char dimension, const float value);
@@ -61,5 +69,12 @@ class Vec3
 		float get(const int dimension) const;
 	private:
 		float values[3];
+};
+
+struct Matrix3x3 
+{
+	Vec3 i;
+	Vec3 j;
+	Vec3 k;
 };
 #endif // VECTORMATH_H

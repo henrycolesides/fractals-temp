@@ -33,7 +33,9 @@ class Color
 		Color& operator/=(const float op2);
 		Color& operator+=(const float op2);
 		Color& operator-=(const float op2);
-			
+
+		friend bool operator==(const Color & op1, const Color & op2);
+
 		friend Color operator*(const Color & op1, const Color & op2);
 		friend Color operator*(const Color & op1, const float op2);
 		friend Color operator*(const float op1, const Color & op2);
@@ -50,6 +52,10 @@ class Color
 		friend Color operator-(const Color & op1, const float op2);
 		friend Color operator-(const float op1, const Color & op2);
 
+        friend Color lerp(const Color & from, const Color & to, const float t);
+		friend Color lerp3(const Color & from, const Color & middle, const Color & to, const float t);
+
+		void unbounded_add(const Color op2);
         friend std::ostream & operator<<(std::ostream & out, const Color & op2);
 
 	private:
@@ -151,7 +157,7 @@ public:
 	Light(const float INTENSITY);
 	virtual ~Light() = 0;
 
-	virtual float compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity) = 0;
+	virtual float compute_lighting(const Vec3& point, Vec3& normal, const Vec3 & view, const float specularity) = 0;
 	virtual Vec3 get_direction(Vec3 & point) = 0;
 
 protected:
@@ -171,7 +177,7 @@ class AmbientLight : public Light
 		Vec3 get_direction(Vec3 & point);
 
 		// Compute lighting for some point P with normal N
-		float compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity);
+		float compute_lighting(const Vec3& point, Vec3& normal, const Vec3 & view, const float specularity);
 };
 
 
@@ -187,7 +193,7 @@ class DirectionalLight : public Light
 		
 		Vec3 get_direction(Vec3 & point);
 
-		float compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity);
+		float compute_lighting(const Vec3& point, Vec3& normal, const Vec3 & view, const float specularity);
 
 	private:
 		Vec3 direction;
@@ -207,7 +213,7 @@ class PointLight : public Light
 		Vec3 get_direction(Vec3 & point);
 
 		//float compute_lighting(const Vec3 & point, const Vec3 & normal, const Vec3 & view, const float specularity);
-		float compute_lighting(const Vec3& point, const Vec3& normal, const Vec3& view, const float specularity);
+		float compute_lighting(const Vec3& point, Vec3& normal, const Vec3 & view, const float specularity);
 
 	private:
 		Vec3 position;
