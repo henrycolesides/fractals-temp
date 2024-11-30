@@ -37,104 +37,106 @@ float randomFloatBetweenMinus1And1() {
 int main()
 {
     // Fern
-    //Bounds initial_bounds = {Vec3(-1.0, -1.0, -1.0), Vec3(1.0, 1.0, 1.0)};
-    //Bounds floor_bounds = {Vec3(-1.0, -3.0, -1.0), Vec3(1.0, -1.0, 1.0)};
-    //Octree * my_tree = new Octree(initial_bounds, floor_bounds, 10);
+    Bounds initial_bounds = {Vec3(-1.0, -1.0, -1.0), Vec3(1.0, 1.0, 1.0)};
+    Bounds floor_bounds = {Vec3(-1.0, -3.0, -1.0), Vec3(1.0, -1.0, 1.0)};
+    Octree * my_tree = new Octree(initial_bounds, floor_bounds, 9);
+    //Octree * my_tree = new Octree(initial_bounds, 0);
 
-    //// IFS Production
+    // IFS Production
 
-    //// Main fern
-    //fern_chaos(my_tree, Vec3(0.0, -1.0, 0.0), 1.0, 2.34, -20.0, 10000000);
+    // Main fern
+    fern_chaos(my_tree, Vec3(0.0, -1.0, 0.0), 1.0, 2.34, -20.0, 10000000);
 
-    ////fern_chaos(my_tree, Vec3(-0.2, -1.0, -0.2), 0.1, 5.0, 45, 10000);
-    ////fern_chaos(my_tree, Vec3(-0.22, -1.0, -0.22), 0.1, 5.0, -135, 10000);
+    //fern_chaos(my_tree, Vec3(-0.2, -1.0, -0.2), 0.1, 5.0, 45, 10000);
+    //fern_chaos(my_tree, Vec3(-0.22, -1.0, -0.22), 0.1, 5.0, -135, 10000);
    
-    //Camera camera = Camera(Vec3(0.01, -0.4, -1.5), SWIDTH, SHEIGHT, 1.0, 1.0, 1.0);
+    Camera camera = Camera(Vec3(0.01, -0.4, -1.5), SWIDTH, SHEIGHT, 1.0, 1.0, 1.0);
+    //Camera camera = Camera(Vec3(0.01, 0.01, -4.0), SWIDTH, SHEIGHT, 1.0, 1.0, 1.0);
     
-    //std::vector<Light *> lights;
-    //lights.push_back(new AmbientLight(0.1f));
-    //lights.push_back(new PointLight(0.2f, Vec3(2.0, 2.0, -2.0)));
-    //lights.push_back(new DirectionalLight(0.7f, Vec3(-1.0, 2.0, -1.0))); 
+    std::vector<Light *> lights;
+    lights.push_back(new AmbientLight(0.1f));
+    lights.push_back(new PointLight(0.2f, Vec3(2.0, 2.0, -2.0)));
+    lights.push_back(new DirectionalLight(0.7f, Vec3(-1.0, 2.0, -1.0))); 
 
 
     // Mandelbulb
-    int level_of_detail = 8;
-    Bounds initial_bounds = {Vec3(-2.0, -2.0, -2.0), Vec3(2.0, 2.0, 2.0)};
-    Octree * my_tree = new Octree(initial_bounds, level_of_detail);
+    //int level_of_detail = 0;
+    //Bounds initial_bounds = {Vec3(-2.0, -2.0, -2.0), Vec3(2.0, 2.0, 2.0)};
+    //Octree * my_tree = new Octree(initial_bounds, level_of_detail);
 
-    float range = pow(2, level_of_detail + 1);
-    float step = 4.0 / range;
-    step *= 2.0;
+    //float range = pow(2, level_of_detail + 1);
+    //float step = 4.0 / range;
+    //step *= 2.0;
 
-    Vec3 p;
-    float length, axis;
-    float max = 0.0;
-    float min = 10000.0;
+    //Vec3 p;
+    //float length, axis;
+    //float max = 0.0;
+    //float min = 10000.0;
 
-    float max_axis = 0.0;
-    float min_axis = 100000.0;
+    //float max_axis = 0.0;
+    //float min_axis = 100000.0;
 
-    float min_distance_o = 0.0;
-    float max_distance_o = 0.799139;
+    //float min_distance_o = 0.0;
+    //float max_distance_o = 0.799139;
     
-    float normalized_o = 0.0;
-    float max_normalized_o = 0.0;
+    //float normalized_o = 0.0;
+    //float max_normalized_o = 0.0;
 
-    float min_distance_a = 0.0;
-    float max_distance_a = 0.552343;
+    //float min_distance_a = 0.0;
+    //float max_distance_a = 0.552343;
 
-    float normalized_a = 0.0;
-    float max_normalized_a = 0.0;
+    //float normalized_a = 0.0;
+    //float max_normalized_a = 0.0;
 
-    for(float x = -2.0; x < 2.0; x += step)
-    {
-        for(float y = -2.0; y < 2.0; y += step)
-        {
-            for(float z = -2.0; z < 2.0; z += step)
-            {
-                p = Vec3(x, y, z);
-                length = 10000.0;
-                axis = 10000.0;
-                if(mandelbulb(p, 8, length, axis))
-                {
-                    if(length > max) max = length;
-                    if(length < min) min = length;
+    //for(float x = -2.0; x < 2.0; x += step)
+    //{
+    //    for(float y = -2.0; y < 2.0; y += step)
+    //    {
+    //        for(float z = -2.0; z < 2.0; z += step)
+    //        {
+    //            p = Vec3(x, y, z);
+    //            length = 10000.0;
+    //            axis = 10000.0;
+    //            if(mandelbulb(p, 8, length, axis))
+    //            {
+    //                if(length > max) max = length;
+    //                if(length < min) min = length;
 
-                    if(axis > max_axis) max_axis = axis;
-                    if(axis < min_axis) min_axis = axis;
+    //                if(axis > max_axis) max_axis = axis;
+    //                if(axis < min_axis) min_axis = axis;
 
-                    p.rotate_about_x(200.0);
-                    //p.rotate_about_x(20.0);
-                    p.rotate_about_y(-20.0);
+    //                p.rotate_about_x(200.0);
+    //                //p.rotate_about_x(20.0);
+    //                p.rotate_about_y(-20.0);
 
-                    normalized_o = normalize(length, min_distance_o, max_distance_o);
-                    if(normalized_o > max_normalized_o) max_normalized_o = normalized_o;
+    //                normalized_o = normalize(length, min_distance_o, max_distance_o);
+    //                if(normalized_o > max_normalized_o) max_normalized_o = normalized_o;
 
-                    normalized_a = normalize(axis, min_distance_a, max_distance_a);
-                    if(normalized_a > max_normalized_a) max_normalized_a = normalized_a;
+    //                normalized_a = normalize(axis, min_distance_a, max_distance_a);
+    //                if(normalized_a > max_normalized_a) max_normalized_a = normalized_a;
 
-                    Color c1 = lerp(Color(255, 0, 0), Color(255, 255, 255), normalized_o);
-                    Color c2 = lerp(c1, Color(0, 200, 200), pow(normalized_a, 1.5));
+    //                Color c1 = lerp(Color(255, 0, 0), Color(255, 255, 255), normalized_o);
+    //                Color c2 = lerp(c1, Color(0, 200, 200), pow(normalized_a, 1.5));
 
-                    //my_tree->insert(p, lerp3(Color(25, 25, 112), Color(255, 215, 0), Color(60, 179, 113), (normalized * normalized)));
-                    //my_tree->insert(p, lerp3(Color(255, 20, 147), Color(60, 179, 113), Color(25, 25, 112), (pow(normalized, 0.75))));
-                    //my_tree->insert(p, lerp(Color(255, 215, 0), Color(25, 25, 112), (pow(normalized, 0.75))));
-                    //my_tree->insert(p, lerp3(Color(255, 20, 147), Color(60, 179, 113), Color(155, 26, 255), (normalized * normalized)));
-                    my_tree->insert(p, c2);
-                }
-            }
-        }
-    }
+    //                //my_tree->insert(p, lerp3(Color(25, 25, 112), Color(255, 215, 0), Color(60, 179, 113), (normalized * normalized)));
+    //                //my_tree->insert(p, lerp3(Color(255, 20, 147), Color(60, 179, 113), Color(25, 25, 112), (pow(normalized, 0.75))));
+    //                //my_tree->insert(p, lerp(Color(255, 215, 0), Color(25, 25, 112), (pow(normalized, 0.75))));
+    //                //my_tree->insert(p, lerp3(Color(255, 20, 147), Color(60, 179, 113), Color(155, 26, 255), (normalized * normalized)));
+    //                my_tree->insert(p, c2);
+    //            }
+    //        }
+    //    }
+    //}
 
-    std::cout << "Max: " << max << ", Min: " << min << ", N Range: " << max_normalized_a << '\n'; 
-    std::cout << "Max Axis: " << max_axis << ", Min Axis: " << min_axis << ", N Range: " << max_normalized_a << '\n'; 
-    Camera camera = Camera(Vec3(0.01, 0.0, -4.0), SWIDTH, SHEIGHT, 1.0, 1.0, 1.0);
+    //std::cout << "Max: " << max << ", Min: " << min << ", N Range: " << max_normalized_a << '\n'; 
+    //std::cout << "Max Axis: " << max_axis << ", Min Axis: " << min_axis << ", N Range: " << max_normalized_a << '\n'; 
+    //Camera camera = Camera(Vec3(0.01, 0.0, -4.0), SWIDTH, SHEIGHT, 1.0, 1.0, 1.0);
 
 
-    std::vector<Light *> lights;
-    lights.push_back(new AmbientLight(0.15f));
-    lights.push_back(new PointLight(0.15f, Vec3(4.0, 4.0, -4.0)));
-    lights.push_back(new DirectionalLight(0.7f, Vec3(-3.0, 4.0, -3.0))); 
+    //std::vector<Light *> lights;
+    //lights.push_back(new AmbientLight(0.15f));
+    //lights.push_back(new PointLight(0.15f, Vec3(4.0, 4.0, -4.0)));
+    //lights.push_back(new DirectionalLight(0.7f, Vec3(-3.0, 4.0, -3.0))); 
 
     //lights.push_back(new AmbientLight(0.2f));
     ////lights.push_back(new DirectionalLight(0.8f, Vec3(2.0, 2.0, -2.0)));

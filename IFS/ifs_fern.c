@@ -151,6 +151,8 @@ void fern(double r)
      translate(-0.5,0.0) ;
      scale(0.0, 0.16) ;
      translate(0.5,0.0) ;
+
+
      G_rgb(0.7, 0.3, 1.0) ;
 
    } else if (r < 0.08) {
@@ -160,6 +162,7 @@ void fern(double r)
      rotate(52.85) ;
      translate(0.0, 0.160) ;
      translate(0.5,0.0) ;
+
      G_rgb(1.0, 0.0, 0.0) ;
 
    } else if (r < 0.15) {
@@ -169,6 +172,8 @@ void fern(double r)
      rotate(146.65) ;
      translate(0.0, 0.044) ;
      translate(0.5,0.0) ;
+
+
      G_rgb(1.0, 0.8, 0.0) ;
 
    } else {
@@ -177,6 +182,8 @@ void fern(double r)
      rotate(-2.69) ;
      translate(0.0, 0.160) ;
      translate(0.5,0.0) ;
+
+
      G_rgb(0.0, 0.8, 0.3) ;
    }
 

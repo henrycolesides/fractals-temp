@@ -80,7 +80,7 @@ int main()
     std::vector<Light*> lights;
     lights.push_back(new AmbientLight(0.2f));
     //lights.push_back(new PointLight(0.6f, Vec3(2.0, 1.0, 0.0)));
-    lights.push_back(new DirectionalLight(0.4f, Vec3(1.0, 4.0, 4.0)));
+    lights.push_back(new DirectionalLight(0.2f, Vec3(1.0, 4.0, 4.0)));
     lights.push_back(new PointLight(0.6f, Vec3(-1.0, 0.25, -3.0)));   
     
     Scene scene(shapes, lights);

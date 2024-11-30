@@ -4,19 +4,19 @@
 
 double clamp_coord(double v, double i_start, double i_end);
 complex complex_coord(double v, double i_start, double i_end, double o_start, double o_end);
-bool do_i_diverge(complex p, int iterations);
+bool do_i_diverge(complex p, int iterations, int * num_ptr);
 int main(int argc, char * argv[])
 {
     double swidth = 1000.0;
     double sheight = 1000.0;
     double x_translate = 100.0;
-    double y_translate = 0.0;
+    double y_translate = -100.0;
     int iterations = 0;
     if(argc < 2) return 0;
 	else iterations = atoi(argv[1]);
-	if(iterations > 200) 
+	if(iterations > 2000) 
 	{
-		fprintf(stderr, "%d is too large!\nLimit 15\n", iterations);
+		fprintf(stderr, "%d is too large!\nLimit 200\n", iterations);
 		return 0;
 	}
 
@@ -27,26 +27,33 @@ int main(int argc, char * argv[])
     complex c, p;
     double r;
     double m;
+    
+    int num_iterations = 0;
 
     for(int i = -(swidth); i < (swidth); ++i)
     {
-        for(int j = -(swidth); j < (sheight); ++j)
+        for(int j = -(sheight); j < (sheight); ++j)
         {
             c = i + j*I;
-            r = complex_coord(creal(c), -750.0, 750.0, -2.0, 2.0);
-            m = complex_coord(cimag(c), -750.0, 750.0, -2.0, 2.0);
+            //r = complex_coord(creal(c), -750.0, 750.0, -2.0, 2.0);
+            //m = complex_coord(cimag(c), -750.0, 750.0, -2.0, 2.0);
+            
+            r = complex_coord(creal(c), -500.0, 500.0, -2.0, 2.0);
+            m = complex_coord(cimag(c), -500.0, 500.0, -2.0, 2.0);
             p = r + m*I;
 
 //            printf("%lf + %lfi\n", r, m);
-            if(do_i_diverge(p, iterations))
+//
+            num_iterations = 0;
+            if(do_i_diverge(p, iterations, &num_iterations))
             {
-                G_rgb(0.0, 0.0, 0.8);
+                G_rgb(0.0, 0.0, 0.8 * complex_coord(num_iterations, 0.0, iterations, 0.0, 1.0));
             }
             else
             {
                 G_rgb(0.0, 0.0, 0.0);
             }
-            G_point(clamp_coord(i + (swidth / 2) + x_translate, 0.0, swidth), clamp_coord(j + (sheight / 2) + y_translate, 0.0, sheight));
+            G_point(clamp_coord(i + (swidth / 2) + x_translate, 0.0, swidth), clamp_coord(-j + (sheight / 2) + y_translate, 0.0, sheight));
         }
     }
 
@@ -59,29 +66,47 @@ double clamp_coord(double v, double i_start, double i_end)
     if(v < i_start) return i_start;
     return v;
 }
+
+
 complex complex_coord(double v, double i_start, double i_end, double o_start, double o_end)
 {
     return ((v - i_start) / (i_end - i_start)) * (o_end - o_start) + o_start;
 }
-bool do_i_diverge(complex p, int iterations)
-{    
+
+
+bool do_i_diverge(complex p, int iterations, int * num_ptr)
+{   
     // Mandelbrot
-    //complex z = 0;
-    //complex c = p;
+    complex z = 0;
+    complex c = p;
     
     // Julia
-    complex z = p;
-//    complex c = -0.624 + 0.435*I;
-    complex c = -1.037 + 0.17*I;
-//    complex c = -0.52 + 0.57*I;
-//    complex c = 0.295 + 0.55*I;
+    //complex z = p;
+//  //  complex c = -0.624 + 0.435*I;
+    //complex c = -1.037 + 0.17*I;
+//  //  complex c = -0.52 + 0.57*I;
+//  //  complex c = 0.295 + 0.55*I;
     int i = 0;
     bool diverges = false;
 
+    //z = z*z + c;
+    //while(!diverges && i < iterations)
+    //{
+    //    z = z*z + c;
+    //    if(cabs(z) > 2) diverges = true;
+    //    ++i;
+    //}
+    
+    // Burning ship
+
+    z = fabs(creal(z)) + fabs(cimag(z))*I;
     z = z*z + c;
     while(!diverges && i < iterations)
     {
+        z = fabs(creal(z)) + fabs(cimag(z))*I;
         z = z*z + c;
+        
+        ++(*num_ptr);
         if(cabs(z) > 2) diverges = true;
         ++i;
     }
